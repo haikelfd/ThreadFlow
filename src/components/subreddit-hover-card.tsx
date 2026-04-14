@@ -342,7 +342,7 @@ export function SubredditHoverCard({
                           ))}
                         {el.contentRules.length > 2 && (
                           <a
-                            href="/dashboard/eligibility"
+                            href={`/dashboard/eligibility?sub=${encodeURIComponent(subreddit.replace(/^r\//, ""))}`}
                             className="flex items-center gap-1 text-[11px] text-primary hover:underline"
                           >
                             View all {el.contentRules.length} rules

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -127,13 +128,15 @@ function EligibilityCard({
   index,
   onRefresh,
   refreshing,
+  autoExpand,
 }: {
   eligibility: SubredditEligibility;
   index: number;
   onRefresh: (subreddit: string) => void;
   refreshing: boolean;
+  autoExpand?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(autoExpand ?? false);
   const config = statusConfig[eligibility.status];
   const StatusIcon = config.icon;
   const totalReqs = eligibility.requirements.length;
@@ -309,7 +312,10 @@ function EligibilityCard({
   );
 }
 
-export default function EligibilityPage() {
+function EligibilityContent() {
+  const searchParams = useSearchParams();
+  const highlightedSub = searchParams.get("sub");
+
   const [filter, setFilter] = useState<"all" | "ready" | "limited" | "locked">("all");
   const [subreddits, setSubreddits] = useState<SubredditEligibility[]>(mockEligibility);
   const [adding, setAdding] = useState(false);
@@ -452,16 +458,39 @@ export default function EligibilityPage() {
 
       {/* List */}
       <div className="space-y-3">
-        {filtered.map((el, i) => (
-          <EligibilityCard
-            key={el.subreddit}
-            eligibility={el}
-            index={i}
-            onRefresh={(sub) => fetchSubreddit(sub)}
-            refreshing={loading === el.subreddit.replace(/^r\//, "")}
-          />
-        ))}
+        {filtered.map((el, i) => {
+          const isHighlighted =
+            highlightedSub &&
+            el.subreddit.replace(/^r\//, "").toLowerCase() ===
+              highlightedSub.toLowerCase();
+          return (
+            <div
+              key={el.subreddit}
+              ref={isHighlighted ? (node) => {
+                if (node) {
+                  setTimeout(() => node.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+                }
+              } : undefined}
+            >
+              <EligibilityCard
+                eligibility={el}
+                index={i}
+                onRefresh={(sub) => fetchSubreddit(sub)}
+                refreshing={loading === el.subreddit.replace(/^r\//, "")}
+                autoExpand={!!isHighlighted}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+export default function EligibilityPage() {
+  return (
+    <Suspense>
+      <EligibilityContent />
+    </Suspense>
   );
 }
