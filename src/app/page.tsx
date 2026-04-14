@@ -23,8 +23,10 @@ import {
   AlertTriangle,
   Lock,
 } from "lucide-react";
+import { SessionProvider } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AuthCTA } from "@/components/auth-cta";
 import { cn } from "@/lib/utils";
 
 // --- Rotating words ---
@@ -273,6 +275,7 @@ const steps = [
 
 export default function LandingPage() {
   return (
+    <SessionProvider>
     <div className="relative min-h-screen overflow-hidden gradient-bg">
       {/* Animated background orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -377,15 +380,7 @@ export default function LandingPage() {
             transition={{ delay: 0.6, duration: 0.5 }}
             className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
           >
-            <Link href="/dashboard">
-              <Button
-                size="lg"
-                className="group h-12 gap-2 bg-primary px-8 text-base text-primary-foreground shadow-xl shadow-primary/25 transition-all hover:shadow-2xl hover:shadow-primary/30"
-              >
-                Start Free
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
+            <AuthCTA />
             <Link href="/dashboard">
               <Button
                 variant="outline"
@@ -727,20 +722,7 @@ export default function LandingPage() {
               transition={{ delay: 0.2, duration: 0.4 }}
               className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
             >
-              <Link href="/dashboard">
-                <Button
-                  size="lg"
-                  className="group h-14 gap-2 bg-primary px-10 text-lg text-primary-foreground shadow-xl shadow-primary/25 transition-all hover:shadow-2xl hover:shadow-primary/30"
-                >
-                  Get Started Free
-                  <motion.span
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <ArrowRight className="h-5 w-5" />
-                  </motion.span>
-                </Button>
-              </Link>
+              <AuthCTA size="large" />
             </motion.div>
 
             <motion.p
@@ -767,5 +749,6 @@ export default function LandingPage() {
         </div>
       </section>
     </div>
+    </SessionProvider>
   );
 }

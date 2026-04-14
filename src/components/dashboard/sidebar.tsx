@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ComposePost } from "@/components/dashboard/compose-post";
+import { UserMenu } from "@/components/dashboard/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
@@ -96,10 +97,10 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Bottom: theme toggle + avatar */}
+        {/* Bottom: theme toggle + user */}
         <div className="mt-auto flex flex-col items-center gap-3">
           <ThemeToggle />
-          <div className="h-8 w-8 rounded-full bg-primary/20 ring-2 ring-primary/30" />
+          <UserMenu />
         </div>
       </aside>
 

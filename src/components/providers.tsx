@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, type ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
 import { AppStateContext } from "@/lib/store";
 import type { PostStatus } from "@/types/reddit";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,10 +29,12 @@ export function Providers({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AppStateContext.Provider
-      value={{ statusOverrides, savedIds, setStatus, toggleSaved }}
-    >
-      <TooltipProvider>{children}</TooltipProvider>
-    </AppStateContext.Provider>
+    <SessionProvider>
+      <AppStateContext.Provider
+        value={{ statusOverrides, savedIds, setStatus, toggleSaved }}
+      >
+        <TooltipProvider>{children}</TooltipProvider>
+      </AppStateContext.Provider>
+    </SessionProvider>
   );
 }

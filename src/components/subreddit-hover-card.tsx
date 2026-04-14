@@ -109,14 +109,57 @@ export function SubredditHoverCard({
     setLoading(true);
 
     try {
+      // Try public API first (no auth needed)
       const res = await fetch(
-        `/api/reddit/subreddit-info?subreddit=${subreddit.replace(/^r\//, "")}`
+        `/api/public/subreddit?subreddit=${subreddit.replace(/^r\//, "")}`
       );
       if (res.ok) {
         const data = await res.json();
-        setInfo(data);
-        setJoined(data.isSubscribed);
-        setTracked(data.isTracked);
+        const parsed: SubredditInfo = {
+          name: data.name,
+          title: data.title,
+          description: data.description,
+          subscribers: data.subscribers,
+          activeUsers: data.activeUsers,
+          createdUtc: data.createdUtc,
+          icon: data.icon,
+          isSubscribed: false,
+          isTracked: false,
+          fullname: data.fullname,
+          subredditType: data.subredditType,
+          eligibility: data.rules?.length > 0
+            ? {
+                subreddit: data.name,
+                status: data.subredditType === "restricted" ? "locked" : "ready",
+                userKarma: 0,
+                userCommentKarma: 0,
+                requirements: [],
+                contentRules: (data.rules as Array<{ id: string; title: string; description: string }>).map(
+                  (r: { id: string; title: string; description: string }) => {
+                    const lower = r.description.toLowerCase();
+                    const severity = lower.includes("ban") || lower.includes("permanent")
+                      ? "ban" as const
+                      : lower.includes("warn")
+                        ? "warn" as const
+                        : "remove" as const;
+                    let category = "behavior" as "self_promotion" | "links" | "content_type" | "formatting" | "behavior" | "spam";
+                    if (lower.includes("link") || lower.includes("url")) category = "links";
+                    else if (lower.includes("promo") || lower.includes("advertis") || lower.includes("shill")) category = "self_promotion";
+                    else if (lower.includes("spam") || lower.includes("affiliate")) category = "spam";
+                    else if (lower.includes("flair") || lower.includes("format")) category = "formatting";
+                    else if (lower.includes("content") || lower.includes("topic")) category = "content_type";
+                    return { id: r.id, title: r.title, description: r.description, severity, category };
+                  }
+                ),
+                restrictions: [],
+                canPost: data.subredditType !== "restricted",
+                canComment: data.subredditType !== "private",
+              }
+            : undefined,
+        };
+        setInfo(parsed);
+        setJoined(false);
+        setTracked(false);
         setLoading(false);
         return;
       }
@@ -124,7 +167,7 @@ export function SubredditHoverCard({
       // Fall through to mock
     }
 
-    // Use mock data for demo
+    // Fallback to mock data
     const mock = getMockInfo(subreddit);
     setInfo(mock);
     setJoined(mock.isSubscribed);
